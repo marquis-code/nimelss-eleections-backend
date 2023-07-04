@@ -18,9 +18,9 @@ module.exports.create_handler = async (req, res) => {
         const upload_response = await cloudinary.uploader.upload(req.file.path)
 
         if(upload_response){
-            const newCandidate = {
+            const newCandidate = new Candidate({
                 firstName, lastName, position, academicLevel, gender, matric, avatar : upload_response.url, cloudinary_id : upload_response.public_id
-            }
+            })
 
             newCandidate.save().then(() => {
                 return res.status(200).json({successMessage : 'Candidate was successfully created!'})
@@ -29,7 +29,8 @@ module.exports.create_handler = async (req, res) => {
             })
         }
     } catch (error) {
-        return res.status(500).json({errorMessage : 'Something went wrong! please try again later.'})
+        console.log(error.message)
+        // return res.status(500).json({errorMessage : 'Something went wrong! please try again later.'})
     }
 }
 

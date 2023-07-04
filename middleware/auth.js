@@ -33,16 +33,13 @@ const checkAdmin = (req, res, next) => {
 };
 
 const checkSuperAdmin = (req, res, next) => {
+    console.log(req.headers.authorization)
     try {
         if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
             jsonwebtoken.verify(req.headers.authorization.split(' ')[1], process.env.JWT_SECRET, async (err, decodedToken) => {
                 if (err) {
                     return res.status(401).json({ errorMessage: err.message });
                 }
-
-                // if (req.body.id && req.body.id !== decodedToken._id) {
-                //     return res.status(401).json({ errorMessage: "Invalid super admin ID" });
-                // }
 
                 if (decodedToken.role !== 'super_admin') {
                     return res.status(401).json({ errorMessage: "Access Denied. You need super admin role access." });

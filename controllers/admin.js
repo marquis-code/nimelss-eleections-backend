@@ -1,16 +1,20 @@
 const Admin = require('../models/admin');
 const jwt = require('jsonwebtoken')
+const bcrypt = require('bcrypt')
 
 module.exports.signup_handler = async (req, res) => {
     try {
         const { firstName, lastName, matric, academicLevel, gender, password, role } = req.body;
-        const user = Admin.findOne({ matric })
-        if (user) {
+        const admin = await Admin.findOne({ matric })
+        if (admin) {
             return res.status(400).json({ errorMessage: `User with matric ${matric} already exist` })
         }
 
+        const salt = await bcrypt.genSalt(10)
+        const hashedPassword = await bcrypt.hash(password, salt)
+
         const newAdmin = new Admin({
-            firstName, lastName, matric, academicLevel, gender, password, role : role || 'admin'
+            firstName, lastName, matric, academicLevel, gender, password : hashedPassword, role : role || 'admin'
         })
 
         newAdmin.save().then(() => {
@@ -26,20 +30,20 @@ module.exports.signup_handler = async (req, res) => {
 module.exports.login_handler = async (req, res) => {
     try {
         const { matric, password } = req.body;
-        const admin = Admin.findOne({ matric })
+        const admin = await Admin.findOne({ matric })
         if (!admin) {
             return res.status(400).json({ errorMessage: 'Invalid login credentials!' })
         }
 
-        const isMatch = await admin.comparePassword(password)
+        const isMatch = bcrypt.compare(password, admin.password)
         if (!isMatch) {
             return res.status(400).json({ errorMessage: 'Invalid login credentials!' })
         }
 
-        const jwtPayload = { _id: user._id }
+        const jwtPayload = { _id: admin._id, role: admin.role }
         const accessToken = jwt.sign(jwtPayload, process.env.JWT_SECRET, { expiresIn: '3 days' })
         return res.status(200).json({
-            successMessage: 'Hurray! Login was successful.', token: accessToken, user: {
+            successMessage: 'Hurray! Login was successful.', token: accessToken, admin: {
                 firstName: admin.firstName,
                 lastName: admin.lastName,
                 matric: admin.matric,
