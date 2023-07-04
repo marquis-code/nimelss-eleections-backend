@@ -29,8 +29,7 @@ module.exports.create_handler = async (req, res) => {
             })
         }
     } catch (error) {
-        console.log(error.message)
-        // return res.status(500).json({errorMessage : 'Something went wrong! please try again later.'})
+        return res.status(500).json({errorMessage : 'Something went wrong! please try again later.'})
     }
 }
 

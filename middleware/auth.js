@@ -33,7 +33,6 @@ const checkAdmin = (req, res, next) => {
 };
 
 const checkSuperAdmin = (req, res, next) => {
-    console.log(req.headers.authorization)
     try {
         if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
             jsonwebtoken.verify(req.headers.authorization.split(' ')[1], process.env.JWT_SECRET, async (err, decodedToken) => {
