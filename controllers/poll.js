@@ -1,4 +1,5 @@
 const Poll = require("../models/poll");
+const User = require("../models/user");
 const mongoose = require("mongoose");
 const _ = require('lodash')
 
@@ -11,9 +12,10 @@ module.exports.fetch_poll = async (req, res) => {
   }
 };
 
+
 module.exports.load_single_poll = async (req, res) => {
   try {
-    const poll = await Poll.findById(req.params.id);
+    const poll = await Poll.findById(req.params.id).populate('user', ['firstName', 'lastName', 'id'])
     if (!poll) {
       return res.status(400).json({ errorMessage: "Poll was not found" });
     }
@@ -33,8 +35,8 @@ module.exports.add_vote = async (req, res) => {
     }
     const optionIndex = req.params.option;
     const username = req.user.name;
-    poll.voted.push(username);
-    poll.voted[optionIndex] = poll.voted[optionIndex] + 1;
+    poll.users_voted.push(username);
+    poll.users_voted[optionIndex] = poll.voted[optionIndex] + 1;
     poll.markModified("votes");
     poll.save(function (err, newPoll) {
       if (err) {
@@ -84,26 +86,42 @@ module.exports.delete_poll = async (req, res) => {
   }
 };
 
-// module.exports.create_poll = async (req, res, next) => {
-//   const choice = req.body.choice;
-//   const identifier = `choices.${choice}.votes`;
-//   Poll.update(
-//     { _id: req.params.pollId },
-//     { $inc: { [identifier]: 1 } },
-//     {},
-//     (err, numberAffected) => {
-//       let Pusher = require("pusher");
-//       let pusher = new Pusher({
-//         appId: process.env.PUSHER_APP_ID,
-//         key: process.env.PUSHER_APP_KEY,
-//         secret: process.env.PUSHER_APP_SECRET,
-//         cluster: "eu",
-//       });
+module.exports.create_poll = async (req, res) => {
+  const {_id} = req.decoded;
+  const user = await User.findById(_id)
 
-//       let payload = { pollId: req.params.pollId, choice: choice };
-//       pusher.trigger("poll-events", "vote", payload, req.body.socketId);
+  const {question, options} = req.body;
+  try {
+    const poll = {
+      question,
+      user,
+      options: options.map((option) => ({
+        candidate : option.candidate,
+        imageUrl : option.imageUrl,
+        academicLevel : option.academicLevel,
+        position : option.position,
+        gender : option.gender,
+        votes : 0
+      }))
+    }
+    let newPoll = new Poll(poll)
+    await newPoll.save()
+    user.polls.push(newPoll._id)
+    await user.save()
 
-//       res.send("");
-//     }
-//   );
-// };
+    return res.status(200).json({successMessage : 'Poll was succssfully created.', newPoll})
+  } catch (error) {
+    return res.status(500).json({ errorMessage: "Something went wrong!" });
+  }
+}
+
+module.exports.find_poll = async (req) => {
+  try {
+    const polls = await Poll.find({
+      author : req.params.name
+    });
+    return response.status(200).json(polls);
+  } catch (error) {
+    return response.status(500).json({ errorMessage: "Something went wrong!" });
+  }
+}

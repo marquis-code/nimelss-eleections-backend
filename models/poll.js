@@ -1,16 +1,31 @@
 const mongoose = require('mongoose')
 
 const optionsSchema = new mongoose.Schema({
-    option : {
+    candidate : {
         type: String,
         required: true,
         unique: true,
+    },
+    imageUrl : {
+        type: String,
+        required: true,
+    },
+    academicLevel : {
+        type: String,
+        required: true,
+    },
+    position : {
+        type: String,
+        required: true,
+    },
+    gender : {
+        type: String,
+        required: true,
     },
     votes : {
         type : Number,
         default : 0
     }
-
 })
 
 const PollSchema = new mongoose.Schema({
@@ -18,17 +33,12 @@ const PollSchema = new mongoose.Schema({
         type : mongoose.Schema.Types.ObjectId,
         ref : 'User'
     },
-    author: {
+    question : {
         type: String,
         required: true
     },
-    question: {
-        type: String,
-        required: true,
-        unique: true,
-    },
     options : [optionsSchema],
-    voted : [{
+    users_voted : [{
         type : mongoose.Schema.Types.ObjectId,
         ref : 'User'
     }],
