@@ -11,7 +11,7 @@ module.exports.signup_handler = async (req, res) => {
         }
 
         const salt = await bcrypt.genSalt(10)
-       const hashedPassword = await bcrypt.hash(password, salt)
+       let hashedPassword = await bcrypt.hash(password, salt)
 
         const newUser = new User({
             firstName, lastName, matric, academicLevel, gender, password : hashedPassword
