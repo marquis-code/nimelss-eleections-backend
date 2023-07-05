@@ -47,26 +47,5 @@ UserSchema.set('toJSON', {
     virtuals : true
 })
 
-UserSchema.pre('save', async function(next){
-  try {
-     if(this.isModified('password')){
-        return next()
-     }
-     const hashed = await bcrypt.hash(this.password, 10);
-     this.password = hashed
-     return next()
-  } catch (error) {
-   return next(error)
-  }
-})
-
-UserSchema.methods.comparePassword = async function(attempt, next){
-  try {
-    return bcrypt.compare(attempt, this.password)
-  } catch (error) {
-     next(error)
-  }
-}
-
 const User  = mongoose.model('User', UserSchema);
 module.exports = User
