@@ -24,6 +24,7 @@ module.exports.signup_handler = async (req, res) => {
             return res.status(400).json({ errorMessage: 'Something went wrong while saving user. Please try again!' })
         })
     } catch (error) {
+        console.log(error)
         return res.status(500).json({ errorMessage: 'Something went wrong. Please try again!' })
     }
 }
