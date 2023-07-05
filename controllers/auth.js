@@ -5,6 +5,9 @@ const bcrypt = require('bcrypt');
 module.exports.signup_handler = async (req, res) => {
     try {
         const { firstName, lastName, matric, academicLevel, gender, password } = req.body;
+        if(!firstName || !lastName || !matric || !academicLevel || !gender || !password) {
+            return res.status(400).json({ errorMessage: 'All form field information are required.' })
+        }
         const user = await User.findOne({ matric })
         if (user) {
             return res.status(400).json({ errorMessage: `User with matric ${matric} already exist` })
@@ -24,7 +27,6 @@ module.exports.signup_handler = async (req, res) => {
             return res.status(400).json({ errorMessage: 'Something went wrong while saving user. Please try again!' })
         })
     } catch (error) {
-        console.log(error)
         return res.status(500).json({ errorMessage: 'Something went wrong. Please try again!' })
     }
 }
